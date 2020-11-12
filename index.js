@@ -1,7 +1,10 @@
 const express = require('express')
+const morgan = require('morgan')
+
 const app = express()
 
 app.use(express.json())
+app.use(morgan('tiny'))
 
 let persons = [
   {
@@ -52,9 +55,12 @@ app.post('/api/persons', (request, response) => {
 
   if (!number) return response.status(400).json({ error: 'number is missing' })
 
-  const isNameExists = persons.some(person => person.name.toLowerCase() === name.toLowerCase())
+  const isNameExists = persons.some(
+    (person) => person.name.toLowerCase() === name.toLowerCase()
+  )
 
-  if(isNameExists) return response.status(400).json({ error: 'name must be unique' })
+  if (isNameExists)
+    return response.status(400).json({ error: 'name must be unique' })
 
   const person = {
     name,
