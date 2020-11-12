@@ -42,11 +42,19 @@ app.get('/api/persons', (request, response) => {
 })
 
 const generateId = () => {
-  return Math.random().toString(36).substr(2, 9);
+  return Math.random().toString(36).substr(2, 9)
 }
 
 app.post('/api/persons', (request, response) => {
   const { name, number } = request.body
+
+  if (!name) return response.status(400).json({ error: 'name is missing' })
+
+  if (!number) return response.status(400).json({ error: 'number is missing' })
+
+  const isNameExists = persons.some(person => person.name.toLowerCase() === name.toLowerCase())
+
+  if(isNameExists) return response.status(400).json({ error: 'name must be unique' })
 
   const person = {
     name,
