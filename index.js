@@ -1,5 +1,6 @@
-require('dotenv').config()
 const express = require('express')
+require('dotenv').config()
+
 const cors = require('cors')
 const morgan = require('morgan')
 const Person = require('./models/person')
@@ -32,10 +33,6 @@ app.get('/api/persons', (request, response) => {
   })
 })
 
-const generateId = () => {
-  return Math.random().toString(36).substr(2, 9)
-}
-
 app.post('/api/persons', (request, response) => {
   const { name, number } = request.body
 
@@ -43,22 +40,14 @@ app.post('/api/persons', (request, response) => {
 
   if (!number) return response.status(400).json({ error: 'number is missing' })
 
-  const isNameExists = persons.some(
-    (person) => person.name.toLowerCase() === name.toLowerCase()
-  )
-
-  if (isNameExists)
-    return response.status(400).json({ error: 'name must be unique' })
-
-  const person = {
+  const person = new Person({
     name,
     number,
-    id: generateId(),
-  }
+  })
 
-  persons = persons.concat(person)
-
-  response.json(person)
+  person.save().then((savedPerson) => {
+    response.json(savedPerson)
+  })
 })
 
 app.get('/api/persons/:id', (request, response) => {
