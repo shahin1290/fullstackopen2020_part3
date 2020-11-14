@@ -16,15 +16,13 @@ app.use(
 
 morgan.token('body', (req, res) => JSON.stringify(req.body))
 
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>')
-})
-
 app.get('/info', (request, response) => {
-  response.send(
-    `<p>Phonebook has info for ${persons.length} people</p>
-    <p>${new Date()}</p>`
-  )
+  Person.find({}).then((persons) => {
+    response.send(
+      `<p>Phonebook has info for ${persons.length} people</p>
+      <p>${new Date()}</p>`
+    )
+  })
 })
 
 app.get('/api/persons', (request, response) => {
@@ -33,37 +31,49 @@ app.get('/api/persons', (request, response) => {
   })
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const { name, number } = request.body
+
+  if (!name) return response.status(400).json({ error: 'name is missing' })
+
+  if (!number) return response.status(400).json({ error: 'number is missing' })
 
   const person = new Person({
     name,
     number,
   })
 
-  person.save().then((savedPerson) => {
-    response.json(savedPerson)
-  })
+  person
+    .save()
+    .then((savedPerson) => {
+      response.json(savedPerson)
+    })
+    .catch((error) => next(error))
 })
 
-app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const person = persons.find((person) => person.id === id)
-  if (person) {
-    response.json(person)
-  } else {
-    response.status(404).end()
-  }
+app.get('/api/persons/:id', (request, response, next) => {
+  const id = request.params.id
+
+  Person.findById(id)
+    .then((person) => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch((error) => next(error))
 })
 
-app.put('/api/persons/:id', (request, response) => {
+app.put('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
   const { name, number } = request.body
-  Person.findByIdAndUpdate(id, { name, number }, { new: true }).then(
-    (updatedPerson) => {
+
+  Person.findByIdAndUpdate(id, { name, number }, { new: true })
+    .then((updatedPerson) => {
       response.json(updatedPerson)
-    }
-  )
+    })
+    .catch((error) => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
