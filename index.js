@@ -1,6 +1,5 @@
-const express = require('express')
 require('dotenv').config()
-
+const express = require('express')
 const cors = require('cors')
 const morgan = require('morgan')
 const Person = require('./models/person')
@@ -14,7 +13,7 @@ app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms  :body')
 )
 
-morgan.token('body', (req, res) => JSON.stringify(req.body))
+morgan.token('body', (req) => JSON.stringify(req.body))
 
 app.get('/info', (request, response) => {
   Person.find({}).then((persons) => {
@@ -63,13 +62,13 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.put('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
-  const { name, number } = request.body
+  const { number } = request.body
 
   Person.findByIdAndUpdate(id, { number }, { new: true, runValidators: true })
     .then((updatedPerson) => {
       response.json(updatedPerson)
     })
-    .catch(error => next(error))
+    .catch((error) => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
@@ -89,7 +88,7 @@ app.use(unknownEndpoint)
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
 
-  if (error.name === 'CastError' && error.kind == 'ObjectId') {
+  if (error.name === 'CastError' && error.kind === 'ObjectId') {
     return response.status(400).send({ error: 'malformatted id' })
   }
 
