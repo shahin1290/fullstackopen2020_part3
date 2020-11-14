@@ -36,10 +36,6 @@ app.get('/api/persons', (request, response) => {
 app.post('/api/persons', (request, response) => {
   const { name, number } = request.body
 
-  if (!name) return response.status(400).json({ error: 'name is missing' })
-
-  if (!number) return response.status(400).json({ error: 'number is missing' })
-
   const person = new Person({
     name,
     number,
@@ -58,6 +54,16 @@ app.get('/api/persons/:id', (request, response) => {
   } else {
     response.status(404).end()
   }
+})
+
+app.put('/api/persons/:id', (request, response) => {
+  const id = request.params.id
+  const { name, number } = request.body
+  Person.findByIdAndUpdate(id, { name, number }, { new: true }).then(
+    (updatedPerson) => {
+      response.json(updatedPerson)
+    }
+  )
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
